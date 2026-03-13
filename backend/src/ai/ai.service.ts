@@ -1,18 +1,18 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import OpenAI from 'openai';
 import { SummarizeDto, RewriteDto, GenerateTitleDto, AiResponseDto } from './dto/ai.dto';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 @Injectable()
 export class AiService {
-  private openai: OpenAI;
+  private client: GoogleGenerativeAI;
+  private model: any;
 
   constructor() {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY environment variable is not set');
+    if (!process.env.GEMINI_API_KEY) {
+      throw new Error('GEMINI_API_KEY environment variable is not set');
     }
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+    this.client = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    this.model = this.client.getGenerativeModel({ model: 'gemini-2.5-flash' });
   }
 
   async summarize(summarizeDto: SummarizeDto): Promise<AiResponseDto> {
@@ -27,24 +27,16 @@ export class AiService {
     }
 
     try {
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'user',
-            content: `Please summarize the following text in 2-3 sentences:\n\n${text}`,
-          },
-        ],
-        max_tokens: 500,
-      });
-
-      const result = response.choices[0].message.content || '';
+      const prompt = `Please summarize the following text concisely in 2-3 sentences:\n\n${text}`;
+      const result = await this.model.generateContent(prompt);
+      const response = result.response;
+      const summary = response.text();
 
       return {
-        result,
+        result: summary,
       };
     } catch (error) {
-      throw new BadRequestException('Failed to summarize text: ' + error.message);
+      throw new BadRequestException('Failed to summarize text: ' + (error as Error).message);
     }
   }
 
@@ -60,24 +52,16 @@ export class AiService {
     }
 
     try {
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'user',
-            content: `Please rewrite the following text in a more professional and clear manner:\n\n${text}`,
-          },
-        ],
-        max_tokens: 500,
-      });
-
-      const result = response.choices[0].message.content || '';
+      const prompt = `Please rewrite the following text in a professional and clear manner:\n\n${text}`;
+      const result = await this.model.generateContent(prompt);
+      const response = result.response;
+      const rewrittenText = response.text();
 
       return {
-        result,
+        result: rewrittenText,
       };
     } catch (error) {
-      throw new BadRequestException('Failed to rewrite text: ' + error.message);
+      throw new BadRequestException('Failed to rewrite text: ' + (error as Error).message);
     }
   }
 
@@ -93,24 +77,16 @@ export class AiService {
     }
 
     try {
-      const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'user',
-            content: `Generate a concise and descriptive title for the following note content. Return only the title, nothing else:\n\n${content}`,
-          },
-        ],
-        max_tokens: 100,
-      });
-
-      const result = response.choices[0].message.content || '';
+      const prompt = `Generate a short, concise title for the following content:\n\n${content}`;
+      const result = await this.model.generateContent(prompt);
+      const response = result.response;
+      const title = response.text();
 
       return {
-        result,
+        result: title,
       };
     } catch (error) {
-      throw new BadRequestException('Failed to generate title: ' + error.message);
+      throw new BadRequestException('Failed to generate title: ' + (error as Error).message);
     }
   }
 }

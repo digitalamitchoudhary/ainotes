@@ -9,6 +9,7 @@ import { useNotesStore } from '@/store/notesStore';
 import NoteCard from '@/components/NoteCard';
 import CreateNoteModal from '@/components/CreateNoteModal';
 import EditNoteModal from '@/components/EditNoteModal';
+import { useTheme } from '@/components/ThemeProvider';
 import type { Note } from '@/store/notesStore';
 
 export default function Dashboard() {
@@ -18,6 +19,7 @@ export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
+  const theme = useTheme();
 
   useEffect(() => {
     if (!accessToken) {
@@ -56,17 +58,17 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
       {/* Header */}
-      <header className="bg-white shadow">
+      <header className="bg-white shadow dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">AI Notes</h1>
-            <p className="text-gray-600">Welcome, {user.firstName}!</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">AI Notes</h1>
+            <p className="text-gray-600 dark:text-gray-300">Welcome, {user.firstName}!</p>
           </div>
           <button
             onClick={handleLogout}
-            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
           >
             Logout
           </button>
@@ -76,19 +78,19 @@ export default function Dashboard() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">Your Notes</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Your Notes</h2>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
+            className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 dark:bg-indigo-700 dark:hover:bg-indigo-800"
           >
             + New Note
           </button>
         </div>
 
         {isLoading ? (
-          <div className="text-center text-gray-600">Loading notes...</div>
+          <div className="text-center text-gray-600 dark:text-gray-400">Loading notes...</div>
         ) : notes.length === 0 ? (
-          <div className="text-center text-gray-600 py-12">
+          <div className="text-center text-gray-600 dark:text-gray-400 py-12">
             <p>No notes yet. Create your first note!</p>
           </div>
         ) : (

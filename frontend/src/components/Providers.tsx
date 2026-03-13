@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/authStore';
 import { useEffect } from 'react';
+import { ThemeProvider } from './ThemeProvider';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,8 +23,10 @@ export function Providers({ children }: { children: ReactNode }) {
   }, [hydrateFromStorage]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        {children}
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
